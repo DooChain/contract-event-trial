@@ -1,9 +1,71 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { ethers, BrowserProvider } from "ethers";
+import abi from "../../../artifacts/contracts/MintNFT.sol/MintNFT.json";
+import { useAccount } from "wagmi";
+
+const contractAddress = "0xd6D7F1069c43506F3e29B449201C639b155885a3";
 
 export default function Home() {
+  const { address, isConnected } = useAccount();
+  const [contract, setContract] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [mintText, setMintText] = useState("");
+
+  const updateContract = async () => {
+    // build the contract that can be used in multiple functions
+    console.log("contractAddress", contractAddress);
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const web3Provider = new ethers.BrowserProvider(ethereum);
+        const signer = await web3Provider.getSigner();
+        const mintNFTContract = new ethers.Contract(
+          contractAddress,
+          abi.abi,
+          signer
+        );
+        setContract(mintNFTContract);
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log("ERROR:", error);
+    }
+  };
+
+  useEffect(() => {
+    updateContract();
+  }, [address]);
+
+  const mint = async () => {
+    try {
+      setMintText("Poping up the metamask to confirm the gas fee");
+      console.log("Poping up the metamask to confirm the gas fee");
+      const mintTxn = await contract.mintNFT(
+        "ipfs://QmeNtvidkTn2qqA4ahAoo8KTrXcE3MMj9UPSa3qPdPkS77"
+      );
+      setMintText("Minting...please wait.");
+      console.log("Minting...please wait.");
+      await mintTxn.wait();
+      setMintText(
+        `Mint function called successfully.\nYou can check on https://sepolia.etherscan.io/tx/${mintTxn.hash}`
+      );
+      console.log(
+        `Mint function called successfully. You can check on https://sepolia.etherscan.io/tx/${mintTxn.hash}`
+      );
+      setTimeout(() => {
+        setMintText("");
+      }, 5000);
+    } catch (error) {
+      setMintText("Error occured while minting");
+      console.log(error);
+      setTimeout(() => {
+        setMintText("");
+      }, 5000);
+    }
+  };
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -11,6 +73,7 @@ export default function Home() {
   };
 
   const handleUpload = () => {
+    mint();
     if (selectedImage) {
       // Implement your logic for uploading the image here
       console.log("Uploading image:", selectedImage);
@@ -48,6 +111,7 @@ export default function Home() {
       >
         Mint
       </button>
+      <div>{mintText}</div>
     </div>
   );
 }
