@@ -6,11 +6,11 @@
 // global scope, and execute the script.
 
 async function main() {
-  const mintNFT = await hre.ethers.deployContract("MintNFT");
+  const mintNFT = await hre.ethers.deployContract("NewMintNFT");
 
   await mintNFT.waitForDeployment();
 
-  console.log(`MintNFT deployed to ${mintNFT.target}`);
+  console.log(`NewMintNFT deployed to ${mintNFT.target}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
