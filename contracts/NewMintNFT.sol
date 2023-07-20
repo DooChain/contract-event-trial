@@ -15,8 +15,12 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+
 // This is just a test NFT collections that helps decentralized Finance, NFT Finance, Social Finance and others kind Dapps building on testnet.
 contract NewMintNFT is ERC721, Ownable {
+    bytes32 public rootHash =
+        0x9f8f5a2556959716e288f3c87b99bdd6f65d5e325e75592494d867b245db523a;
     using Strings for uint256;
     using Counters for Counters.Counter;
 
@@ -50,8 +54,11 @@ contract NewMintNFT is ERC721, Ownable {
         return supply.current();
     }
 
-    function mint(uint256 _mintAmount) public payable mintRequire(_mintAmount) {
-        require(msg.value >= mintCost * _mintAmount, "Insufficient funds!");
+    function mint(
+        uint256 _mintAmount,
+        uint256 _mintCost
+    ) public payable mintRequire(_mintAmount) {
+        require(msg.value >= _mintCost * _mintAmount, "Insufficient funds!");
         require(
             mintCount[msg.sender] + _mintAmount <= mintLimit,
             "public mint limit exceeded"
@@ -114,15 +121,35 @@ contract NewMintNFT is ERC721, Ownable {
         require(os);
     }
 
+    event NewNFTMinted(address sender, uint256 tokenId);
+
     function _mintLoop(address _receiver, uint256 _mintAmount) internal {
         for (uint256 i = 0; i < _mintAmount; i++) {
             _safeMint(_receiver, supply.current());
+            emit NewNFTMinted(msg.sender, supply.current());
             supply.increment();
         }
     }
 
     function _baseURI() internal view virtual override returns (string memory) {
         return uriPrefix;
+    }
+
+    function saveWhiteList(bytes32 _rootHash) public {
+        rootHash = _rootHash;
+    }
+
+    function isValidProof(
+        bytes32[] calldata proof,
+        bytes32 leaf
+    ) private view returns (bool) {
+        return MerkleProof.verify(proof, rootHash, leaf);
+    }
+
+    function isWhiteListed(
+        bytes32[] calldata proof
+    ) public view returns (bool) {
+        return isValidProof(proof, keccak256(abi.encodePacked(msg.sender)));
     }
 }
 // This is just a test NFT collections that helps decentralized Finance, NFT Finance, Social Finance and others kind Dapps building on testnet.
