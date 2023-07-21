@@ -27,25 +27,40 @@ contract NewMintNFT is ERC721, Ownable {
     Counters.Counter private supply;
 
     string public uriPrefix =
-        "ipfs://bafybeib2wj7nnjpqtqwxupu5a6tau5jka7oz25pk3off552s6htudu7pyy/";
+        "ipfs://Qma6Ch3QXuPt9QXiTY7aRsBjb2g53kgnH5zwwS2g7Mi73s/";
     string public uriSuffix = ".json";
 
     uint256 public mintCost = 0.0001 ether;
-    uint256 public maxSupply = 33;
-    uint256 public maxMintAmountPerTx = 33;
-    uint256 mintLimit = 33;
+    uint256 public maxSupply = 70;
+    uint256 public maxMintAmountPerTx = 5;
+    uint256 mintLimit = 10;
     mapping(address => uint256) public mintCount;
 
+    event NewNFTMinted(address sender, uint256 tokenId, uint256 mintCount);
+
     constructor() ERC721("NewMintNFT", "NMN") {}
+
+    function isValidProof(
+        bytes32[] calldata proof,
+        bytes32 leaf
+    ) private view returns (bool) {
+        return MerkleProof.verify(proof, rootHash, leaf);
+    }
+
+    function isWhiteListed(
+        bytes32[] calldata proof
+    ) public view returns (bool) {
+        return isValidProof(proof, keccak256(abi.encodePacked(msg.sender)));
+    }
 
     modifier mintRequire(uint256 _mintAmount) {
         require(
             _mintAmount > 0 && _mintAmount <= maxMintAmountPerTx,
-            "Invalid mint amount!"
+            "Invalid mint amount! Should be less than 5"
         );
         require(
             supply.current() + _mintAmount <= maxSupply,
-            "Max supply exceeded!"
+            "Max supply exceeded! Should be less than 70"
         );
         _;
     }
@@ -56,16 +71,25 @@ contract NewMintNFT is ERC721, Ownable {
 
     function mint(
         uint256 _mintAmount,
-        uint256 _mintCost
+        bytes32[] calldata proof
     ) public payable mintRequire(_mintAmount) {
-        require(msg.value >= _mintCost * _mintAmount, "Insufficient funds!");
+        bool whiteListed = isWhiteListed(proof);
+        require(
+            msg.value >= (whiteListed ? 0 : mintCost) * _mintAmount,
+            "Insufficient funds!"
+        );
         require(
             mintCount[msg.sender] + _mintAmount <= mintLimit,
-            "public mint limit exceeded"
+            "public mint limit exceeded. Should be less than 10"
         );
 
         _mintLoop(msg.sender, _mintAmount);
         mintCount[msg.sender] += _mintAmount;
+        emit NewNFTMinted(
+            msg.sender,
+            uint256(supply.current()),
+            mintCount[msg.sender]
+        );
     }
 
     function getmintCount() public view returns (uint256) {
@@ -109,7 +133,7 @@ contract NewMintNFT is ERC721, Ownable {
                 ? string(
                     abi.encodePacked(
                         currentBaseURI,
-                        _tokenId.toString(),
+                        uint256(_tokenId + 1).toString(),
                         uriSuffix
                     )
                 )
@@ -121,12 +145,9 @@ contract NewMintNFT is ERC721, Ownable {
         require(os);
     }
 
-    event NewNFTMinted(address sender, uint256 tokenId);
-
     function _mintLoop(address _receiver, uint256 _mintAmount) internal {
         for (uint256 i = 0; i < _mintAmount; i++) {
             _safeMint(_receiver, supply.current());
-            emit NewNFTMinted(msg.sender, supply.current());
             supply.increment();
         }
     }
@@ -137,19 +158,6 @@ contract NewMintNFT is ERC721, Ownable {
 
     function saveWhiteList(bytes32 _rootHash) public {
         rootHash = _rootHash;
-    }
-
-    function isValidProof(
-        bytes32[] calldata proof,
-        bytes32 leaf
-    ) private view returns (bool) {
-        return MerkleProof.verify(proof, rootHash, leaf);
-    }
-
-    function isWhiteListed(
-        bytes32[] calldata proof
-    ) public view returns (bool) {
-        return isValidProof(proof, keccak256(abi.encodePacked(msg.sender)));
     }
 }
 // This is just a test NFT collections that helps decentralized Finance, NFT Finance, Social Finance and others kind Dapps building on testnet.
