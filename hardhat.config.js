@@ -8,5 +8,13 @@ module.exports = {
       url: process.env.STAGING_QUICKNODE_KEY,
       accounts: [process.env.PRIVATE_KEY],
     },
+    "arbitrum-testnet": {
+      url: process.env.STAGING_GETBLOCK_KEY,
+      accounts: [process.env.PRIVATE_KEY],
+    },
+    arbitrumGoerli: {
+      url: "https://goerli-rollup.arbitrum.io/rpc",
+      accounts: [process.env.PRIVATE_KEY],
+    },
   },
 };

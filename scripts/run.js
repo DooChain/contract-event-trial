@@ -1,5 +1,5 @@
-const contractAddress = "0xF0246FAE84850130DC846994Bd6D4d4B4279490F";
-
+const contractAddress = "0xF0246FAE84850130DC846994Bd6D4d4B4279490F"; // Sepolia
+// const contractAddress = "0x40D1F2Ae469CBE4b0Ee0C8C1EBD581d5800E9acB"; // Arbitrum Goerli
 const main = async () => {
   // const provider = new ethers.providers.JsonRpcProvider(
   //   process.env.STAGING_QUICKNODE_KEY
