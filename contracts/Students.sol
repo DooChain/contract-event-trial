@@ -11,19 +11,19 @@ contract Students {
     mapping(uint256 => Student) public students;
     uint256 public curId;
 
-    event Added(string name, uint256 age);
+    event Added(uint id, string name, uint256 age);
     event Updated(uint id, string name, uint256 age);
     event Removed(uint id);
 
     constructor() {
-        curId = 0;
+        curId = 1;
     }
 
     // Function to add a new Student to the mapping and increment the counter
     function add(string calldata _name, uint256 _age) public {
         students[curId] = Student(_name, _age);
+        emit Added(curId, _name, _age);
         curId++;
-        emit Added(_name, _age);
     }
 
     // Function to add a new Student to the mapping and increment the counter
@@ -34,7 +34,7 @@ contract Students {
 
     // Function to remove a specific record based on its ID
     function remove(uint256 _id) public {
-        // Delete the last element in the mapping
+        delete students[_id];
         emit Removed(_id);
     }
 }

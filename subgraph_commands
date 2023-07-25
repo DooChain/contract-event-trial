@@ -1,0 +1,1 @@
+graph init --product subgraph-studio --from-contract 0xa9866E023a56b664DEdF619d245562624dA9432D --network sepolia --abi './artifacts/contracts/Students.sol/Students.json' test subgraph_test
