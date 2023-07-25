@@ -10,6 +10,8 @@ cache
 artifacts
 
 #subgraph
-subgraph_test
+abis
+build
+generated
 
 .env
