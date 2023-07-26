@@ -1,55 +1,17 @@
-// const express = require("express");
-// const { createClient } = require("urql");
-// const app = express();
-// const port = process.env.PORT || 3000;
-
-// const APIURL =
-//   "https://api.studio.thegraph.com/query/50250/test/version/latest";
-
-// const tokensQuery = `
-//   query {
-//     addeds(first: 5) {
-//       id
-//       name
-//       age
-//       blockNumber
-//     }
-//   }
-// `;
-
-// const client = createClient({
-//   url: APIURL,
-// });
-
-// app.get("/api", (req, res) => {
-//   // Replace this JSON message with your desired response
-//   let data = {};
-//   const main = async () => {
-//     data = await client.query(tokensQuery).toPromise();
-//   };
-//   main();
-//   const message = {
-//     message: "Hello, this is a simple GET API response!",
-//   };
-//   // Send the JSON response
-//   res.json(data);
-// });
-
-// app.listen(port);
-// console.log("listening on", port);
-
+const express = require("express");
 const { ApolloClient, InMemoryCache, gql } = require("@apollo/client");
+const app = express();
+const port = process.env.PORT || 3000;
 
-const APIURL =
-  "https://api.studio.thegraph.com/query/50250/test/version/latest";
+const APIURL = "https://api.studio.thegraph.com/query/50250/test/v0.1.1";
 
 const tokensQuery = `
-    query {
-      addeds(first: 5) {
-        id
+    {
+      students(first: 10, where: { status_not: "removed" }) {
+        studentId
         name
         age
-        blockNumber
+        status
       }
     }
   `;
@@ -59,11 +21,21 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 });
 
-client
-  .query({
-    query: gql(tokensQuery),
-  })
-  .then((data) => console.log("Subgraph data: ", data))
-  .catch((err) => {
-    console.log("Error fetching data: ", err);
-  });
+app.get("/api", (req, res) => {
+  // Replace this JSON message with your desired response
+  client
+    .query({
+      query: gql(tokensQuery),
+    })
+    .then((data) => {
+      console.log("Subgraph data: ", data);
+      // Send the JSON response
+      res.json(data);
+    })
+    .catch((err) => {
+      console.log("Error fetching data: ", err);
+    });
+});
+
+app.listen(port);
+console.log("listening on", port);
