@@ -23,6 +23,7 @@ export default function Home() {
   const [textWhiteListed, setTextWhiteListed] = useState("");
   const [mintCount, setMintCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  const [contractBalance, setContractBalance] = useState(0);
   const setMintTextandErase = async (text = "", timeout = 6000) => {
     setMintText(text);
     setTimeout(() => {
@@ -90,6 +91,10 @@ export default function Home() {
     setTotalCount(parseInt(totalSupply));
     setMintCount(parseInt(mintCnt));
     setTextWhiteListed(`You are ${result ? "" : "not "}whitelisted.`);
+    const provider = ethers.getDefaultProvider("sepolia");
+    const balance = await provider.getBalance(contractAddress);
+    const balanceInEth = ethers.formatEther(balance);
+    setContractBalance(balanceInEth);
   };
 
   useEffect(() => {
@@ -151,6 +156,7 @@ export default function Home() {
     <div className="m-8">
       <div className="flex justify-evenly">
         <div>{textWhiteListed}</div>
+        <div>Contract Balance: {contractBalance} ETH</div>
         <div>Your NFTs: {mintCount} / 10</div>
         <div>Total NFTs: {totalCount} / 70</div>
       </div>

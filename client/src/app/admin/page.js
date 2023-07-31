@@ -3,7 +3,7 @@ import { useAccount } from "wagmi";
 import { useEffect, useState } from "react";
 import { ethers, BrowserProvider } from "ethers";
 import abi from "../../../../artifacts/contracts/NewMintNFT.sol/NewMintNFT.json";
-const contractAddress = "0x53c033d9307c1F675177b3fc64d40ce906506c4a";
+const contractAddress = "0x6c86440984DA65bc6318711BeBCefc1d502dd46B";
 
 export default function Home() {
   const { address, isConnected } = useAccount();
